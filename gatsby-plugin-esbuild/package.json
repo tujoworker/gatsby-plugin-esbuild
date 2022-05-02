@@ -1,0 +1,30 @@
+{
+  "name": "gatsby-plugin-esbuild",
+  "description": "With this Gatsby Plugin you spped up the build slighly",
+  "keywords": [
+    "gatsby",
+    "gatsby-plugin",
+    "esbuild"
+  ],
+  "version": "0.0.4",
+  "license": "MIT",
+  "author": "Tobias Høegh",
+  "main": "index.js",
+  "scripts": {
+    "release": "npm publish"
+  },
+  "dependencies": {
+    "@babel/core": "7.17.9",
+    "@babel/plugin-syntax-jsx": "7.16.7",
+    "@babel/plugin-transform-runtime": "7.17.0",
+    "babel-plugin-remove-graphql-queries": "4.12.1",
+    "esbuild": "0.14.38",
+    "esbuild-loader": "2.18.0"
+  },
+  "peerDependencies": {
+    "gatsby": "^4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,28 +1,31 @@
 {
-  "name": "gatsby-plugin-esbuild",
-  "description": "With this Gatsby Plugin you spped up the build slighly",
-  "keywords": [
-    "gatsby",
-    "gatsby-plugin",
-    "esbuild"
+  "name": "esbuild-monorepo",
+  "workspaces": [
+    "example-basic",
+    "gatsby-plugin-esbuild"
   ],
-  "version": "0.0.0",
+  "private": true,
   "license": "MIT",
   "author": "Tobias Høegh",
-  "main": "index.js",
+  "version": "0.0.0",
+  "scripts": {
+    "watch": "nodemon --exec 'yarn start'  --ext '*' --watch '*' --ignore '**/.cache/*' --ignore '**/public/*'",
+    "start": "yarn workspace example-basic start",
+    "build": "yarn workspace example-basic build",
+    "serve": "yarn workspace example-basic serve",
+    "clean": "yarn workspace example-basic clean",
+    "test": "yarn workspace integration-tests test",
+    "test:cypress": "yarn workspace integration-tests test:cypress",
+    "test:cypress:ci": "yarn workspace integration-tests test:cypress:ci",
+    "test:watch": "yarn workspace integration-tests test --watch",
+    "lint": "yarn workspace gatsby-plugin-esbuild lint",
+    "release": "yarn workspace gatsby-plugin-esbuild release"
+  },
   "dependencies": {
-    "@babel/core": "7.17.9",
-    "@babel/plugin-syntax-jsx": "7.16.7",
-    "@babel/plugin-transform-runtime": "7.17.0",
-    "babel-plugin-remove-graphql-queries": "4.12.1",
-    "esbuild": "0.14.38",
-    "esbuild-loader": "2.18.0"
+    "nodemon": "2.0.16"
   },
-  "peerDependencies": {
-    "gatsby": "^4"
-  },
-  "publishConfig": {
-    "access": "public"
+  "volta": {
+    "node": "16.1.0"
   },
   "packageManager": "yarn@3.2.0"
 }
