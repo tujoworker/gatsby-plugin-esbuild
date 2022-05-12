@@ -6,7 +6,7 @@
     "gatsby-plugin",
     "esbuild"
   ],
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "MIT",
   "author": "Tobias Høegh",
   "main": "index.js",

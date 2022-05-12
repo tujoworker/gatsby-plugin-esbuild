@@ -14,7 +14,6 @@ It is experimental and not really mean to be used in production.
 
 Know issues:
 
-- The time reported looks off, some times.
 - [Emotion](https://emotion.sh) does not work properly.
 - React v17+ jsx transform (Gatsby config: `jsxRuntime: 'automatic'`) does not work properly.
 

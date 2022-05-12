@@ -6400,14 +6400,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-monorepo@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "esbuild-monorepo@workspace:."
-  dependencies:
-    nodemon: 2.0.16
-  languageName: unknown
-  linkType: soft
-
 "esbuild-netbsd-64@npm:0.14.38":
   version: 0.14.38
   resolution: "esbuild-netbsd-64@npm:0.14.38"
@@ -10541,6 +10533,14 @@ __metadata:
   checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
   languageName: node
   linkType: hard
+
+"monorepo@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "monorepo@workspace:."
+  dependencies:
+    nodemon: 2.0.16
+  languageName: unknown
+  linkType: soft
 
 "ms@npm:2.0.0":
   version: 2.0.0

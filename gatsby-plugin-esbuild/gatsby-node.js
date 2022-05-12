@@ -4,11 +4,14 @@
  * See: http://www.gatsbyjs.org/docs/node-apis/
  */
 
-const http = require('http')
 const { performance } = require('perf_hooks')
 const babel = require('@babel/core')
 const esbuild = require('esbuild')
 const { ESBuildMinifyPlugin } = require('esbuild-loader')
+
+const excludeRule = /\/src\//
+const includeRule = /\/src\/.*\.(js|jsx|tsx)$/
+const isDev = process.env.NODE_ENV === 'development'
 
 /**
  * Defines the options schema
@@ -42,14 +45,11 @@ const perfMetrics = {
 async function transform(code, options) {
   if (code.includes('graphql')) {
     babelConfig.filename = options.sourcefile
-    // console.log('babel code_1', code)
 
     const babelStart = performance.now()
 
     const result = await babel.transform(code, babelConfig)
     code = result.code
-
-    // console.log('babel code_2', code)
 
     const babelEnd = performance.now()
     perfMetrics.babel += babelEnd - babelStart
@@ -83,13 +83,15 @@ function isJsLoader(rule) {
   )
 }
 
-function useESBuildLoader({ target }) {
+function useESBuildLoader(options) {
+  const target = options?.target || (isDev ? 'es2017' : 'es2015')
   return {
     loader,
     options: {
       loader: 'tsx',
       target,
       implementation: esbuildImplementation,
+      ...options,
     },
   }
 }
@@ -102,10 +104,10 @@ function replaceBabelLoader(rule, options) {
   // To bypass the new loader, simply return:
   // return rule;
 
+  const exclude = rule.exclude
+
   if (typeof rule?.use === 'function') {
     const originalUseRule = rule.use
-
-    rule = { ...rule }
 
     rule.use = (context) => {
       if (
@@ -116,10 +118,25 @@ function replaceBabelLoader(rule, options) {
         return originalUseRule(context)
       }
 
-      return useESBuildLoader(options)
+      return useESBuildLoader(options?.esbuildOptions)
+    }
+    if (isDev) {
+      rule.exclude = (file) => {
+        if (file) {
+          if (excludeRule.test(file)) {
+            return true
+          }
+          if (typeof exclude === 'function') {
+            return exclude(file)
+          } else if (exclude) {
+            return exclude.test(file)
+          }
+        }
+        return false
+      }
     }
   } else {
-    Object.assign(rule, useESBuildLoader(options))
+    Object.assign(rule, useESBuildLoader(options?.esbuildOptions))
   }
 
   return rule
@@ -130,18 +147,36 @@ function replaceBabelLoader(rule, options) {
  *
  */
 module.exports.onCreateWebpackConfig = (
-  { actions, getConfig, store },
+  { actions, getConfig, loaders },
   pluginOptions
 ) => {
-  const config = getConfig()
+  const webpackConfig = getConfig()
   const target = pluginOptions?.esbuildOptions?.target || 'es2015'
-  const ignoreFiles = pluginOptions?.ignoreFiles || null
 
-  config.module.rules = config.module.rules.map((rule) => {
+  if (!global.__originalLoader) {
+    global.__originalLoader = loaders.js
+  }
+
+  if (loaders.js !== globalThis.makeUseESBuildLoader) {
+    loaders.js = globalThis.makeUseESBuildLoader =
+      function makeUseESBuildLoader() {
+        return useESBuildLoader(pluginOptions?.esbuildOptions)
+      }
+  }
+
+  // Only for the fast refresh we still use the original loader
+  if (isDev) {
+    webpackConfig.module.rules.push({
+      ...global.__originalLoader(),
+      test: includeRule,
+    })
+  }
+
+  webpackConfig.module.rules = webpackConfig.module.rules.map((rule) => {
     if (Array.isArray(rule?.oneOf)) {
       rule.oneOf = rule.oneOf.map((sub) => {
         if (isJsLoader(sub)) {
-          sub = replaceBabelLoader(sub, { target, ignoreFiles })
+          sub = replaceBabelLoader(sub, pluginOptions)
         }
 
         return sub
@@ -149,11 +184,11 @@ module.exports.onCreateWebpackConfig = (
     } else if (Array.isArray(rule?.use)) {
       if (isJsLoader(rule)) {
         rule.use = rule.use.map((sub) => {
-          return replaceBabelLoader(sub, { target, ignoreFiles })
+          return replaceBabelLoader(sub, pluginOptions)
         })
       }
     } else if (isJsLoader(rule)) {
-      rule = replaceBabelLoader(rule, { target, ignoreFiles })
+      rule = replaceBabelLoader(rule, pluginOptions)
     }
 
     return rule
@@ -163,93 +198,39 @@ module.exports.onCreateWebpackConfig = (
    * If enabled – Babel throws an error message that there is a too large chunk
    * But why Babel?
    */
-  if (false && Array.isArray(config?.optimization?.minimizer)) {
-    config.optimization.minimizer = config.optimization.minimizer.map(
-      (plugin) => {
+  if (Array.isArray(webpackConfig?.optimization?.minimizer)) {
+    webpackConfig.optimization.minimizer =
+      webpackConfig.optimization.minimizer.map((plugin) => {
         if (plugin.constructor.name === 'TerserPlugin') {
           plugin = new ESBuildMinifyPlugin({
             target,
-            implementation: esbuildImplementation,
+            implementation: esbuild,
           })
         }
 
         if (plugin.constructor.name === 'CssMinimizerPlugin') {
           plugin = new ESBuildMinifyPlugin({
             css: true,
-            implementation: esbuildImplementation,
+            implementation: esbuild,
           })
         }
 
         return plugin
-      }
-    )
+      })
   }
 
-  actions.replaceWebpackConfig(config)
+  actions.replaceWebpackConfig(webpackConfig)
 }
 
 module.exports.onPreInit = ({ store }) => {
   globalThis.__useJsxRuntime =
     store.getState().config.jsxRuntime === 'automatic'
 }
-module.exports.onCreateDevServer = ({ store, reporter }) => {
-  waitForHost({ store, reporter })
-}
-module.exports.onPostBuild = ({ store, reporter }) => {
-  reportPerf({ reporter })
-}
 
-function reportPerf({ reporter }) {
+module.exports.onPostBuild = ({ reporter }) => {
   reporter.info(
-    `gatsby-plugin-esbuild: ${Number(perfMetrics.esbuild / 1e3).toFixed(
+    `gatsby-plugin-esbuild: ${Number(perfMetrics.esbuild / 100).toFixed(
       3
-    )}s and included Babel ${Number(perfMetrics.babel / 1e3).toFixed(3)}s`
+    )}s with Babel ${Number(perfMetrics.babel / 100).toFixed(3)}s`
   )
-}
-
-function waitForHost({ store, reporter }) {
-  const state = store.getState()
-
-  const waitForRequest = async () => {
-    try {
-      await httpAsync({
-        hostname: state.program.host,
-        port: state.program.p,
-        path: '/',
-        method: 'GET',
-        timeout: 300000,
-      })
-    } catch (e) {
-      reporter.error(e)
-    }
-
-    clearInterval(intervalId)
-
-    if (intervalId) {
-      reportPerf({ reporter })
-    }
-
-    intervalId = null
-  }
-
-  let intervalId = setTimeout(() => {
-    waitForRequest()
-  }, 5e3)
-}
-
-async function httpAsync(options) {
-  return new Promise((resolve, reject) => {
-    const request = http.request(options, (res) => {
-      res.on('data', (chunk) => {
-        if (chunk) {
-          resolve()
-        }
-      })
-      res.on('error', (error) => {
-        reject(error)
-      })
-    })
-
-    request.end()
-  })
 }

@@ -17,7 +17,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     ],\
     "dependencyTreeRoots": [\
       {\
-        "name": "esbuild-monorepo",\
+        "name": "monorepo",\
         "reference": "workspace:."\
       },\
       {\
@@ -32,9 +32,9 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     "enableTopLevelFallback": true,\
     "ignorePatternData": "(^(?:\\\\.yarn\\\\/sdks(?:\\\\/(?!\\\\.{1,2}(?:\\\\/|$))(?:(?:(?!(?:^|\\\\/)\\\\.{1,2}(?:\\\\/|$)).)*?)|$))$)",\
     "fallbackExclusionList": [\
-      ["esbuild-monorepo", ["workspace:."]],\
       ["example-basic", ["workspace:example-basic"]],\
-      ["gatsby-plugin-esbuild", ["virtual:dda383767c7baa3553d7c63526fc20d97d5fdadc179a35fd8882b9a001136107defe3c7c425053686527c6f54adb6d52e0f675ab1ffdc37e91f66b145352aaa4#workspace:gatsby-plugin-esbuild", "workspace:gatsby-plugin-esbuild"]]\
+      ["gatsby-plugin-esbuild", ["virtual:dda383767c7baa3553d7c63526fc20d97d5fdadc179a35fd8882b9a001136107defe3c7c425053686527c6f54adb6d52e0f675ab1ffdc37e91f66b145352aaa4#workspace:gatsby-plugin-esbuild", "workspace:gatsby-plugin-esbuild"]],\
+      ["monorepo", ["workspace:."]]\
     ],\
     "fallbackPool": [\
     ],\
@@ -9204,16 +9204,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
-      ["esbuild-monorepo", [\
-        ["workspace:.", {\
-          "packageLocation": "./",\
-          "packageDependencies": [\
-            ["esbuild-monorepo", "workspace:."],\
-            ["nodemon", "npm:2.0.16"]\
-          ],\
-          "linkType": "SOFT"\
-        }]\
-      ]],\
       ["esbuild-netbsd-64", [\
         ["npm:0.14.38", {\
           "packageLocation": "./.yarn/unplugged/esbuild-netbsd-64-npm-0.14.38-dbbf2ab36f/node_modules/esbuild-netbsd-64/",\
@@ -14108,6 +14098,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["moment", "npm:2.29.3"]\
           ],\
           "linkType": "HARD"\
+        }]\
+      ]],\
+      ["monorepo", [\
+        ["workspace:.", {\
+          "packageLocation": "./",\
+          "packageDependencies": [\
+            ["monorepo", "workspace:."],\
+            ["nodemon", "npm:2.0.16"]\
+          ],\
+          "linkType": "SOFT"\
         }]\
       ]],\
       ["ms", [\

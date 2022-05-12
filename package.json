@@ -1,5 +1,5 @@
 {
-  "name": "esbuild-monorepo",
+  "name": "monorepo",
   "workspaces": [
     "example-basic",
     "gatsby-plugin-esbuild"
@@ -9,7 +9,8 @@
   "author": "Tobias Høegh",
   "version": "0.0.0",
   "scripts": {
-    "watch": "nodemon --exec 'yarn start'  --ext '*' --watch '*' --ignore '**/.cache/*' --ignore '**/public/*'",
+    "watch": "nodemon --exec 'yarn start'  --ext '*' --watch '*' --ignore '**/src/*' --ignore '**/.cache/*' --ignore '**/public/*'",
+    "watch:build": "nodemon --exec 'yarn build'  --ext '*' --watch '*' --ignore '**/src/*' --ignore '**/.cache/*' --ignore '**/public/*'",
     "start": "yarn workspace example-basic start",
     "build": "yarn workspace example-basic build",
     "serve": "yarn workspace example-basic serve",
